@@ -4,8 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers\Auth\UserAuthController;
 use \App\Http\Controllers\Auth\ForgotPasswordController;
-use \App\Http\Controllers\Admin\{AdminProfileController, AdminSettingsController, AdminStaffController};
-use \App\Http\Controllers\{AppointmentController};
+use \App\Http\Controllers\Admin\{AdminProfileController, AdminSettingsController, AdminStaffController, AboutUsController};
+use \App\Http\Controllers\{AppointmentController, ContactUsController};
 use App\Http\Middleware\{IsAdmin, IsAdminStaff, IsAdminSubAdmin};
 
 Route::get('/user', function (Request $request) {
@@ -31,6 +31,11 @@ Route::post('/appointments/{id}/update-status', [AppointmentController::class, '
 
 Route::get('/get-admins-staff', [AdminStaffController::class, 'allAdminStaff']);
 
+Route::get('/about-us', [AboutUsController::class, 'index']);
+Route::post('/about-us/image', [AboutUsController::class, 'store']);
+
+Route::post('/send-contact-message', [ContactUsController::class, 'sendMessage']);
+
 
 
 Route::group(['middleware' => ['auth:api']], function () {
@@ -47,6 +52,11 @@ Route::group(['middleware' => ['auth:api']], function () {
         Route::post('/appointments/{id}/toggle-read/{tag}', [AppointmentController::class, 'toggleRead']);
         Route::post('/appointments/{id}/update-status', [AppointmentController::class, 'updateStatus']);
         Route::delete('/delete-appointment/{id}/', [AppointmentController::class, 'deleteAppointment']);
+
+        Route::get('/messages', [ContactUsController::class, 'getMessages']);
+        Route::post('/message/{id}/toggle-read-status/{tag}', [ContactUsController::class, 'toggleReadStatus']);
+        Route::get('messages/count', [ContactUsController::class, 'countUnreadMessages']);
+        Route::delete('/delete-message/{id}/', [ContactUsController::class, 'deleteMessage']);
     });
     Route::prefix('admin')->middleware([IsAdminSubAdmin::class])->group(function () {
         Route::post('/user/{id}/toggle-status', [AdminStaffController::class, 'toggleUserStatus']);
@@ -61,6 +71,8 @@ Route::group(['middleware' => ['auth:api']], function () {
 
         Route::get('staff/{id}', [AdminStaffController::class, 'getUser']);
         Route::delete('staff/{id}/delete', [AdminStaffController::class, 'deleteUser']);
+
+        Route::post('/about-us', [AboutUsController::class, 'update']);
 
         // Route::post('/test-upload', function (Request $request) {
         //     if ($request->hasFile('image')) {
